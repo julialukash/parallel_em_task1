@@ -14,13 +14,16 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-QMAKE_CXXFLAGS += -fopenmp
-QMAKE_LFLAGS += -fopenmp
+unix:
+{
+    QMAKE_CXXFLAGS += -fopenmp
+    QMAKE_LFLAGS += -fopenmp
+    CONFIG += c++11
+}
 
 SOURCES += main.cpp \
     em_algo.cpp
 
-CONFIG += c++11
 
 HEADERS += \
     em_algo.h
