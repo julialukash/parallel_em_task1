@@ -75,14 +75,14 @@ int main(int argc, char *argv[])
     matrix features;
     int_vector labels;
     read_from_file(input_filename, features, labels);
-    for (auto i = 0; i < features.size1(); ++i)
-    {
-        for (auto j = 0 ; j < features.size2(); ++j)
-            std::cout << features(i, j) << " ";
-        std::cout << std::endl;
-    }
+//    for (auto i = 0; i < features.size1(); ++i)
+//    {
+//        for (auto j = 0 ; j < features.size2(); ++j)
+//            std::cout << features(i, j) << " ";
+//        std::cout << std::endl;
+//    }
     auto em_algorithm = em_algo(number_of_clusters);
-    em_algorithm.init_start_parameters();
+    em_algorithm.init(features);
     //write_to_file(output_filename, features, labels);
     return 0;
 }

@@ -6,12 +6,12 @@
 class em_algo
 {
 private:
-    const int _max_iterations = 50;
+    const int max_iterations = 50;
     const double tol = 1e-4;
-    int _number_of_clusters;
+    int n_clusters;
 public:
     em_algo(int number_of_clusters);
-    void init_start_parameters();
+    void init(matrix& features);
     void expectation_step();
     void maximization_step();
 };
