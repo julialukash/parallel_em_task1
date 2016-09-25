@@ -5,8 +5,8 @@
 
 struct model
 {
-    matrix means;
-    matrix sigma;
+    double_matrix means;
+    double_matrix sigma;
     double_vector weights;
 
     model() {};

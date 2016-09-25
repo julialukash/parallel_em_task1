@@ -18,3 +18,9 @@ Y = [header; Y];
 [predicted_label,x1,x2] = importfile_2dim('result_test_set_1.csv',1, 10000);
 new_features = [x1 x2];
 plotSample(new_features, predicted_label);
+
+sigma = [1, 0; 0, 2];
+% 
+% xR = X * inv(sigma);
+
+% b * inv(A)= b/A
