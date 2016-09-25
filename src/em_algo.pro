@@ -16,9 +16,19 @@ TEMPLATE = app
 
 unix:
 {
-    QMAKE_CXXFLAGS += -fopenmp
-    QMAKE_LFLAGS += -fopenmp
+    #QMAKE_CXXFLAGS += -fopenmp
+    #QMAKE_LFLAGS += -fopenmp
     CONFIG += c++11
+}
+
+macx:
+{
+    QMAKE_CXXFLAGS += -std=c++14 -stdlib=libc++ -mmacosx-version-min=10.8
+    QMAKE_CFLAGS += -std=c++14 -stdlib=libc++ -mmacosx-version-min=10.8
+    CONFIG += c++14
+
+    LIBS += -L"/usr/local/Cellar/boost/1.61.0_1/lib"
+    INCLUDEPATH += "/usr/local/Cellar/boost/1.61.0_1/include"
 }
 
 SOURCES += main.cpp \
