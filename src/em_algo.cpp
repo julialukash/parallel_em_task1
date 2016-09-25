@@ -128,10 +128,13 @@ void em_algo::expectation_step(double_matrix& features)
         ublas::matrix_column<double_matrix > current_means(parameters.means, j);
         auto log_likelihood = calculate_log_likelihood(features, parameters.sigma, current_means);
         for (auto i = 0; i < log_likelihood.size(); ++i)
+        {
+//            std::cout << "ll = " << log_likelihood(i) << " exp = " << exp(log_likelihood(i)) << " , w = " << parameters.weights(j) << std::endl;
             hidden_vars(i, j) = parameters.weights(j) * exp(log_likelihood(i));
-        // g(:, j) = w_j * N(X(:, means(j), sigmas(j)
+//            std::cout << "hv = " << hidden_vars(i, j) << std::endl;
+        }
     }
-    std::cout << hidden_vars << std::endl;
+//    std::cout << hidden_vars << std::endl;
 }
 
 void em_algo::maximization_step(double_matrix& features)
