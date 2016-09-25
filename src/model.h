@@ -2,11 +2,12 @@
 #define MODEL_H
 
 #include "interface.h"
+#include <vector>
 
 struct model
 {
     matrix means;
-    matrix sigma;
+    std::vector<matrix> sigma;
     double_vector weights;
 
     model() {};

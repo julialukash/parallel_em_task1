@@ -1,10 +1,11 @@
 #include "em_algo.h"
 
-#include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/algorithm/minmax_element.hpp>
-#include <boost/random/uniform_real.hpp>
+#include <boost/array.hpp>
 #include <boost/generator_iterator.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/random/linear_congruential.hpp>
+#include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
 typedef boost::minstd_rand base_generator_type;
@@ -22,10 +23,11 @@ void em_algo::init(matrix& features)
 
     parameters = model();
 
+    // init weights
+    parameters.weights = double_vector(n_clusters, 1.0 / n_clusters);
+
     // init means
     parameters.means = matrix(n_features, n_clusters);
-    parameters.sigma = matrix(n_features, n_features, n_clusters);
-
     for (auto i = 0; i < n_features; ++i)
     {
         // take min, max value and create random from [min, max]
@@ -35,11 +37,25 @@ void em_algo::init(matrix& features)
         boost::uniform_real<> uni_dist(*min_max_values.first, *min_max_values.second);
         boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(generator, uni_dist);
         for(auto j = 0; j < n_clusters; j++)
+        {
             parameters.means(i, j) = uni();
-
+        }
     }
-    // init weights
-    parameters.weights = double_vector(n_clusters, 1.0 / n_clusters);
+
+    for (auto i = 0; i < n_clusters; ++i)
+        parameters.sigma.push_back(matrix(n_features, n_features));
+
+    boost::uniform_real<> uni_01_dist(0, 1);
+    boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni_01(generator, uni_01_dist);
+
+    for (auto k = 0; k < n_clusters; ++k)
+        for (auto i = 0; i < n_features; ++i)
+            for (auto j = 0; j < n_features; ++j)
+                if (i != j)
+                    parameters.sigma[k](i, j) = 0;
+                else
+                    parameters.sigma[k](i, j) = uni_01();
+
     std::cout << parameters << std::endl;
 }
 

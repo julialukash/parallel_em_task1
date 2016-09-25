@@ -2,8 +2,16 @@
 
 std::ostream& operator<<(std::ostream& os, const model& model)
 {
-    os << "means: \n" << model.means << std::endl;
-    os << "sigma: \n" << model.sigma << std::endl;
     os << "weights: \n" << model.weights  << std::endl;
+    os << "means: \n" << model.means << std::endl;
+    os << "sigma: \n";
+    for (auto k = 0; k < model.sigma.size(); ++k) {
+        for (auto i = 0; i < model.sigma[0].size1(); ++i) {
+            for (auto j = 0; j < model.sigma[0].size2(); ++j)
+                os << model.sigma[k](i, j) << " ";
+            os << "\n";
+        }
+        os << "\n";
+    }
     return os;
 }
