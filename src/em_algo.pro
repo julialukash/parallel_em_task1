@@ -32,9 +32,11 @@ macx:
 }
 
 SOURCES += main.cpp \
-    em_algo.cpp
+    em_algo.cpp \
+    model.cpp
 
 
 HEADERS += \
     em_algo.h \
-    interface.h
+    interface.h \
+    model.h
