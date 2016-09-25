@@ -94,10 +94,10 @@ double_vector em_algo::calculate_log_likelihood(double_matrix& features, double_
     }
     double pi = boost::math::constants::pi<double>();
     double likelihood_const = -0.5 * (n_objects * log(2 * pi) + 2 * ld);
-    double_vector likelihood = double_vector(n_objects, likelihood_const);
-    for (auto i = 0; i < likelihood.size(); ++i)
-        likelihood(i) += features_lower_sigma_square(i, 0) + features_lower_sigma_square(i, 1);
-    return likelihood;
+    double_vector log_likelihood = double_vector(n_objects, likelihood_const);
+    for (auto i = 0; i < log_likelihood.size(); ++i)
+        log_likelihood(i) += features_lower_sigma_square(i, 0) + features_lower_sigma_square(i, 1);
+    return log_likelihood;
 }
 
 void em_algo::expectation_step(double_matrix& features)
@@ -109,10 +109,12 @@ void em_algo::expectation_step(double_matrix& features)
     for (auto j = 0; j < n_clusters; ++j)
     {
         ublas::matrix_column<double_matrix > current_means(parameters.means, j);
-        auto likelihood = calculate_log_likelihood(features, parameters.sigma, current_means);
-        std::cout << likelihood << std::endl;
+        auto log_likelihood = calculate_log_likelihood(features, parameters.sigma, current_means);
+        for (auto i = 0; i < log_likelihood.size(); ++i)
+            hidden_vars(i, j) = parameters.weights(j) * exp(log_likelihood(i));
         // g(:, j) = w_j * N(X(:, means(j), sigmas(j)
     }
+    std::cout << hidden_vars << std::endl;
 }
 
 void em_algo::maximization_step(double_matrix& features)
