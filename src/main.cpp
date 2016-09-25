@@ -75,12 +75,12 @@ int main(int argc, char *argv[])
 
     matrix features;
     int_vector labels;
-
     read_from_file(input_filename, features, labels);
 
     auto algorithm = em_algo(number_of_clusters);
     algorithm.init(features);
+    auto optimal_model = algorithm.process(features);
+    std::cout << optimal_model << std::endl;
     //write_to_file(output_filename, features, labels);
     return 0;
 }
-
