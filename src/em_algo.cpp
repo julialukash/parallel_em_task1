@@ -23,7 +23,6 @@ em_algo::em_algo(int number_of_clusters)
 
 void em_algo::init(double_matrix& features)
 {
-    long n_objects = features.size1();
     long n_features = features.size2();
 
     base_generator_type generator(42);
@@ -35,13 +34,6 @@ void em_algo::init(double_matrix& features)
 
     // init means
     parameters.means = double_matrix(n_features, n_clusters);
-    parameters.sigma = double_matrix(n_features, n_features);
-    parameters.sigma(0, 0) = 1;
-    parameters.sigma(0, 1) = 0;
-    parameters.sigma(1, 0) = 0;
-    parameters.sigma(1, 1) = 2;
-
-
     for (auto i = 0; i < n_features; ++i)
     {
         // take min, max value and create random from [min, max]
@@ -50,14 +42,14 @@ void em_algo::init(double_matrix& features)
 
         boost::uniform_real<> uni_dist(*min_max_values.first, *min_max_values.second);
         boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(generator, uni_dist);
-        for(auto j = 0; j < n_clusters; j++)
+        for (auto j = 0; j < n_clusters; j++)
         {
             parameters.means(i, j) = uni();
         }
     }
 
     for (auto i = 0; i < n_clusters; ++i)
-        parameters.sigma.push_back(matrix(n_features, n_features));
+        parameters.sigma.push_back(double_matrix(n_features, n_features));
 
     boost::uniform_real<> uni_01_dist(0, 1);
     boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni_01(generator, uni_01_dist);
@@ -120,13 +112,12 @@ double_vector em_algo::calculate_log_likelihood(double_matrix& features, double_
 void em_algo::expectation_step(double_matrix& features)
 {
     long n_objects = features.size1();
-    long n_features = features.size2();
 
     double_matrix hidden_vars(n_objects, n_clusters);
     for (auto j = 0; j < n_clusters; ++j)
     {
         ublas::matrix_column<double_matrix > current_means(parameters.means, j);
-        auto log_likelihood = calculate_log_likelihood(features, parameters.sigma, current_means);
+        auto log_likelihood = calculate_log_likelihood(features, parameters.sigma[j], current_means);
         for (auto i = 0; i < log_likelihood.size(); ++i)
         {
 //            std::cout << "ll = " << log_likelihood(i) << " exp = " << exp(log_likelihood(i)) << " , w = " << parameters.weights(j) << std::endl;

@@ -6,8 +6,8 @@
 
 struct model
 {
-    matrix means;
-    std::vector<matrix> sigma;
+    double_matrix means;
+    std::vector<double_matrix> sigma;
     double_vector weights;
 
     model() {};
