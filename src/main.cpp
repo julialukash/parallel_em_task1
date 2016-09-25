@@ -9,7 +9,7 @@
 #include "em_algo.h"
 
 
-void read_from_file(char* filename, matrix& features, int_vector& labels)
+void read_from_file(char* filename, double_matrix& features, int_vector& labels)
 {
     std::ifstream input_file(filename);
     std::string value;
@@ -26,7 +26,7 @@ void read_from_file(char* filename, matrix& features, int_vector& labels)
     input_file >> value;
     n_features = std::stol(value);
 
-    features = matrix(n_points, n_features);
+    features = double_matrix(n_points, n_features);
     labels = int_vector(n_points);
 
     std::getline(input_file, value);
@@ -42,7 +42,7 @@ void read_from_file(char* filename, matrix& features, int_vector& labels)
     }
 }
 
-void write_to_file(char* filename, matrix& features, int_vector& labels)
+void write_to_file(char* filename, double_matrix& features, int_vector& labels)
 {
     std::ofstream output_file(filename);
     if (!output_file.is_open())
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     auto number_of_clusters = std::stoi(argv[2]);
     auto output_filename = argv[3];
 
-    matrix features;
+    double_matrix features;
     int_vector labels;
     read_from_file(input_filename, features, labels);
 
