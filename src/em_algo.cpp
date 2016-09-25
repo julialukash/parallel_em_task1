@@ -6,6 +6,8 @@
 #include <boost/generator_iterator.hpp>
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <boost/math/constants/constants.hpp>
+
 
 #include "cholesky.hpp"
 #include "inverse.h"
@@ -54,7 +56,7 @@ void em_algo::init(double_matrix& features)
     std::cout << parameters << std::endl;
 }
 
-void em_algo::calculate_log_likelihood(double_matrix& features, double_matrix& sigma, ublas::matrix_column<double_matrix > & means)
+double_vector em_algo::calculate_log_likelihood(double_matrix& features, double_matrix& sigma, ublas::matrix_column<double_matrix > & means)
 {
     long n_objects = features.size1();
     long n_features = features.size2();
@@ -72,20 +74,30 @@ void em_algo::calculate_log_likelihood(double_matrix& features, double_matrix& s
         for (int j = 0; j < n_features; ++j)
             features(i, j) = features(i, j) - means(j);
 
-    //
+    // todo:check inverse
     double_matrix inverse_lower_triangular_sigma(lower_triangular_sigma.size1(), lower_triangular_sigma.size2());
     bool is_inverted = InvertMatrix(lower_triangular_sigma, inverse_lower_triangular_sigma);
     if (!is_inverted)
     {
         // todo: throw exception
     }
-
-//    b * inv(A)= b/A
+    // todo : check noalias http://www.boost.org/doc/libs/1_58_0/libs/numeric/ublas/doc/operations_overview.html
     auto features_lower_sigma = ublas::prod(features, inverse_lower_triangular_sigma);
-//    std::cout <<  features_lower_sigma  << std::endl;
     std::cout <<  features_lower_sigma.size1() << " " << features_lower_sigma.size2() << std::endl;
-    //    ld = sum(log(diag(R)));
-//    l = -0.5*( d*log(2*pi) + ld*2 + sum(xR.^2, 2) );
+    auto features_lower_sigma_square = element_prod(features_lower_sigma, features_lower_sigma);
+
+    // ld
+    double ld = 0;
+    for (auto i = 0; i < lower_triangular_sigma.size1(); ++i)
+    {
+        ld += log(lower_triangular_sigma(i, i));
+    }
+    double pi = boost::math::constants::pi<double>();
+    double likelihood_const = -0.5 * (n_objects * log(2 * pi) + 2 * ld);
+    double_vector likelihood = double_vector(n_clusters, 1.0 / n_clusters);
+    for (auto i = 0; i < likelihood.size(); ++i)
+        likelihood(i) += features_lower_sigma_square(i, 0) + features_lower_sigma_square(i, 1);
+    return likelihood;
 }
 
 void em_algo::expectation_step(double_matrix& features)
@@ -97,7 +109,7 @@ void em_algo::expectation_step(double_matrix& features)
     for (auto j = 0; j < n_clusters; ++j)
     {
         ublas::matrix_column<double_matrix > current_means(parameters.means, j);
-        calculate_log_likelihood(features, parameters.sigma, current_means);
+        auto likelihood = calculate_log_likelihood(features, parameters.sigma, current_means);
         // g(:, j) = w_j * N(X(:, means(j), sigmas(j)
     }
 }
