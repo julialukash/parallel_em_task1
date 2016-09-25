@@ -15,14 +15,14 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 
-unix:QMAKE_CXXFLAGS += -fopenmp
-else:macx:QMAKE_CXXFLAGS += -std=c++14 -stdlib=libc++ -mmacosx-version-min=10.8
+macx:QMAKE_CXXFLAGS += -std=c++14 -stdlib=libc++ -mmacosx-version-min=10.8
+else:unix:QMAKE_CXXFLAGS += -fopenmp
 
-unix:QMAKE_LFLAGS += -fopenmp
-else:macx:QMAKE_CFLAGS += -std=c++14 -stdlib=libc++ -mmacosx-version-min=10.8
+macx:QMAKE_CFLAGS += -std=c++14 -stdlib=libc++ -mmacosx-version-min=10.8
+else:unix:QMAKE_LFLAGS += -fopenmp
 
-unix:CONFIG += c++11
-else:macx:CONFIG += c++14
+macx:CONFIG += c++14
+else:unix:CONFIG += c++11
 
 macx:
 {
