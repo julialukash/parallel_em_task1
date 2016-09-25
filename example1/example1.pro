@@ -26,4 +26,5 @@ SOURCES += main.cpp \
 
 
 HEADERS += \
-    em_algo.h
+    em_algo.h \
+    interface.h

@@ -1,20 +1,15 @@
 #include <memory>
 #include <stdlib.h>
 #include <stdio.h>
-#include <omp.h>
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/random/normal_distribution.hpp>
 
+#include "interface.h"
 #include "em_algo.h"
 
-typedef boost::numeric::ublas::matrix<double> matrix;
-typedef boost::numeric::ublas::vector<int> vector;
 
-void read_from_file(char* filename, matrix& features, vector& labels)
+void read_from_file(char* filename, matrix& features, int_vector& labels)
 {
     std::ifstream input_file(filename);
     std::string value;
@@ -32,7 +27,7 @@ void read_from_file(char* filename, matrix& features, vector& labels)
     n_features = std::stol(value);
 
     features = matrix(n_points, n_features);
-    labels = vector(n_points);
+    labels = int_vector(n_points);
 
     std::getline(input_file, value);
 
@@ -47,7 +42,7 @@ void read_from_file(char* filename, matrix& features, vector& labels)
     }
 }
 
-void write_to_file(char* filename, matrix& features, vector& labels)
+void write_to_file(char* filename, matrix& features, int_vector& labels)
 {
     std::ofstream output_file(filename);
     if (!output_file.is_open())
@@ -78,7 +73,7 @@ int main(int argc, char *argv[])
     auto number_of_clusters = std::stoi(argv[2]);
     auto output_filename = argv[3];
     matrix features;
-    vector labels;
+    int_vector labels;
     read_from_file(input_filename, features, labels);
     for (auto i = 0; i < features.size1(); ++i)
     {
@@ -87,7 +82,8 @@ int main(int argc, char *argv[])
         std::cout << std::endl;
     }
     auto em_algorithm = em_algo(number_of_clusters);
-    write_to_file(output_filename, features, labels);
+    em_algorithm.init_start_parameters();
+    //write_to_file(output_filename, features, labels);
     return 0;
 }
 
