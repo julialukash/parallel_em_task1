@@ -1,6 +1,6 @@
 number_of_classes = 5;
 procents_of_classes = [0.1, 0.05, 0.05, 0.1, 0.7];
-number_of_clouds_in_classes = [1, 1, 1, 1, 1];
+number_of_clouds_in_classes = [1, 1, 1, 1, 2];
 params.nFeatures = 2;
 params.distance ='far';
 params.width ='fat';
@@ -13,5 +13,6 @@ header  = zeros(1, size(Y,2));
 header(1) = size(Y, 1);
 header(2) = size(Y, 2) - 1;
 Y = [header; Y];
-filename = 'test_set_1.csv';
-csvwrite(filename,Y);
+%filename = 'test_set_1.csv';
+%csvwrite(filename,Y);
+ 
