@@ -8,8 +8,8 @@
 namespace ublas = boost::numeric::ublas;
 
 typedef ublas::matrix<double> double_matrix;
-typedef ublas::vector<int> int_vector;
 typedef ublas::vector<double> double_vector;
+typedef ublas::vector<int> int_vector;
 
 //#include <omp.h>
 

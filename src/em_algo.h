@@ -17,6 +17,7 @@ private:
 
     void expectation_step(double_matrix &features);
     void maximization_step(double_matrix& features);
+
 public:
     em_algo(int number_of_clusters = 100);
     void init(double_matrix& features);
