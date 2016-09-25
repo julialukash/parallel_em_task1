@@ -94,7 +94,7 @@ double_vector em_algo::calculate_log_likelihood(double_matrix& features, double_
     }
     double pi = boost::math::constants::pi<double>();
     double likelihood_const = -0.5 * (n_objects * log(2 * pi) + 2 * ld);
-    double_vector likelihood = double_vector(n_clusters, 1.0 / n_clusters);
+    double_vector likelihood = double_vector(n_objects, likelihood_const);
     for (auto i = 0; i < likelihood.size(); ++i)
         likelihood(i) += features_lower_sigma_square(i, 0) + features_lower_sigma_square(i, 1);
     return likelihood;
@@ -110,6 +110,7 @@ void em_algo::expectation_step(double_matrix& features)
     {
         ublas::matrix_column<double_matrix > current_means(parameters.means, j);
         auto likelihood = calculate_log_likelihood(features, parameters.sigma, current_means);
+        std::cout << likelihood << std::endl;
         // g(:, j) = w_j * N(X(:, means(j), sigmas(j)
     }
 }
