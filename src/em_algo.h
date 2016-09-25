@@ -9,9 +9,10 @@ class em_algo
 private:
     model parameters;
 
-    const int max_iterations = 50;
     const double tol = 1e-4;
     int n_clusters;
+
+    double_matrix hidden_vars;
 
     double_vector calculate_log_likelihood(double_matrix& features, double_matrix& sigma, ublas::matrix_column<double_matrix > & means);
 
@@ -21,7 +22,7 @@ private:
 public:
     em_algo(int number_of_clusters = 100);
     void init(double_matrix& features);
-    model process(double_matrix& features);
+    model process(double_matrix& features, int max_iterations = 50);
 };
 
 #endif // EM_ALGO_H

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     algorithm.init(features);
     model optimal_model = algorithm.process(features);
 
-    std::cout << optimal_model << std::endl;
+    std::cout << "optimal model\n" << optimal_model << std::endl;
 
     //import::write(output_filename, features, labels);
     return 0;
