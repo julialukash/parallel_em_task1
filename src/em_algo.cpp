@@ -14,27 +14,33 @@ em_algo::em_algo(int number_of_clusters)
     n_clusters = number_of_clusters;
 }
 
-model em_algo::init(matrix& features)
+void em_algo::init(matrix& features)
 {
     base_generator_type generator(42);
     long n_objects = features.size1();
     long n_features = features.size2();
+
+    parameters = model();
+
     // init means
-    model init_model = model();
-    init_model.means = matrix(n_features, n_clusters);
-    for (auto i = 0; i < n_features; ++i){
+    parameters.means = matrix(n_features, n_clusters);
+    parameters.sigma = matrix(n_features, n_features, n_clusters);
+
+    for (auto i = 0; i < n_features; ++i)
+    {
         // take min, max value and create random from [min, max]
         boost::numeric::ublas::matrix_column<matrix > column(features, i);
         auto min_max_values = boost::minmax_element(column.begin(), column.end());
+
         boost::uniform_real<> uni_dist(*min_max_values.first, *min_max_values.second);
         boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni(generator, uni_dist);
         for(auto j = 0; j < n_clusters; j++)
-            init_model.means(i, j) = uni();
+            parameters.means(i, j) = uni();
+
     }
     // init weights
-    init_model.weights = double_vector(n_clusters, 1.0 / n_clusters);
-    std::cout << init_model << std::endl;
-    return init_model;
+    parameters.weights = double_vector(n_clusters, 1.0 / n_clusters);
+    std::cout << parameters << std::endl;
 }
 
 void em_algo::expectation_step()
@@ -43,6 +49,11 @@ void em_algo::expectation_step()
 }
 
 void em_algo::maximization_step()
+{
+
+}
+
+void em_algo::process()
 {
 
 }

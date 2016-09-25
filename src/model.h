@@ -3,13 +3,13 @@
 
 #include "interface.h"
 
-class model
+struct model
 {
-public:
     matrix means;
+    matrix sigma;
     double_vector weights;
 
-    model();
+    model() {};
 
     friend std::ostream& operator<<(std::ostream& os, const model& model);
 };

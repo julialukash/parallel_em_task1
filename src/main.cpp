@@ -72,11 +72,14 @@ int main(int argc, char *argv[])
     auto input_filename = argv[1];
     auto number_of_clusters = std::stoi(argv[2]);
     auto output_filename = argv[3];
+
     matrix features;
     int_vector labels;
+
     read_from_file(input_filename, features, labels);
-    auto em_algorithm = em_algo(number_of_clusters);
-    auto init_model = em_algorithm.init(features);
+
+    auto algorithm = em_algo(number_of_clusters);
+    algorithm.init(features);
     //write_to_file(output_filename, features, labels);
     return 0;
 }
