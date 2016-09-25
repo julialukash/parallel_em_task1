@@ -9,6 +9,8 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/random/normal_distribution.hpp>
 
+#include "em_algo.h"
+
 typedef boost::numeric::ublas::matrix<double> matrix;
 typedef boost::numeric::ublas::vector<int> vector;
 
@@ -64,6 +66,7 @@ void write_to_file(char* filename, matrix& features, vector& labels)
     output_file.close();
 }
 
+
 int main(int argc, char *argv[])
 {
     if (argc < 4)
@@ -83,6 +86,7 @@ int main(int argc, char *argv[])
             std::cout << features(i, j) << " ";
         std::cout << std::endl;
     }
+    auto em_algorithm = em_algo(number_of_clusters);
     write_to_file(output_filename, features, labels);
     return 0;
 }
