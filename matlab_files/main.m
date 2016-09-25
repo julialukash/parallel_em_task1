@@ -1,0 +1,12 @@
+number_of_classes = 3;
+procents_of_classes = [0.1, 0.5, 0.4];
+number_of_clouds_in_classes = [1, 2, 1];
+params.nFeatures = 2;
+params.distance ='far';
+params.width ='fat';
+model = create_model(number_of_classes, procents_of_classes, number_of_clouds_in_classes, params);
+[X, t] =gen_sample(model, 1000);
+Y = [t, X];
+plotSample(X, t);
+%filename = 'test_set_1.csv';
+%csvwrite(filename,Y);
