@@ -21,18 +21,17 @@ em_algo::em_algo(int number_of_clusters)
 
 void em_algo::init(double_matrix& features)
 {
-    long n_features = features.size2();
-
     base_generator_type generator(42);
 
     parameters = model();
+    parameters.n_features = features.size2();
 
     // init weights
     parameters.weights = double_vector(n_clusters, 1.0 / n_clusters);
 
     // init means
-    parameters.means = double_matrix(n_features, n_clusters);
-    for (auto i = 0; i < n_features; ++i)
+    parameters.means = double_matrix(parameters.n_features, n_clusters);
+    for (int i = 0; i < parameters.n_features; ++i)
     {
         // take min, max value and create random from [min, max]
         ublas::matrix_column<double_matrix > column(features, i);
@@ -46,15 +45,16 @@ void em_algo::init(double_matrix& features)
         }
     }
 
+    std::cout << "create sigma\n";
     for (auto i = 0; i < n_clusters; ++i)
-        parameters.sigma.push_back(double_matrix(n_features, n_features));
+        parameters.sigma.push_back(double_matrix(parameters.n_features, parameters.n_features));
 
     boost::uniform_real<> uni_01_dist(0, 1);
     boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni_01(generator, uni_01_dist);
 
     for (auto k = 0; k < n_clusters; ++k)
-        for (auto i = 0; i < n_features; ++i)
-            for (auto j = 0; j < n_features; ++j)
+        for (auto i = 0; i < parameters.n_features; ++i)
+            for (auto j = 0; j < parameters.n_features; ++j)
                 if (i != j)
                     parameters.sigma[k](i, j) = 0;
                 else
@@ -66,9 +66,8 @@ void em_algo::init(double_matrix& features)
 double_vector em_algo::calculate_log_likelihood(double_matrix& features, double_matrix& sigma, ublas::matrix_column<double_matrix > & means)
 {
     long n_objects = features.size1();
-    long n_features = features.size2();
 
-    double_matrix lower_triangular_sigma(n_features, n_features);
+    double_matrix lower_triangular_sigma(parameters.n_features, parameters.n_features);
     // todo: compare to matlab
     size_t res = cholesky_decompose(sigma, lower_triangular_sigma);
     std::cout << res << std::endl;
@@ -83,7 +82,7 @@ double_vector em_algo::calculate_log_likelihood(double_matrix& features, double_
     // center features
     for (int i = 0; i < n_objects; ++i)
         // todo: maybe there is a better way + make features not change
-        for (int j = 0; j < n_features; ++j)
+        for (int j = 0; j < parameters.n_features; ++j)
             features(i, j) = features(i, j) - means(j);
 
     // todo:check inverse
@@ -133,9 +132,11 @@ void em_algo::expectation_step(double_matrix& features)
 //    std::cout << hidden_vars << std::endl;
 }
 
-void em_algo::maximization_step(double_matrix& /*features*/)
+void em_algo::maximization_step(double_matrix& features)
 {
+    for (int j = 0; j < n_clusters; ++j) {
 
+    }
 }
 
 model em_algo::process(double_matrix& features, int max_iterations)

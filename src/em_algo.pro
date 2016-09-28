@@ -8,12 +8,11 @@ QT       += core
 
 QT       -= gui
 
-TARGET = example1
+TARGET = em_algo
 CONFIG   += console
 CONFIG   -= app_bundle
 
 TEMPLATE = app
-
 
 macx:QMAKE_CXXFLAGS += -std=c++14 -stdlib=libc++ -mmacosx-version-min=10.10
 else:unix:QMAKE_CXXFLAGS += -fopenmp
