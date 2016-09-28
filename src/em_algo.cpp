@@ -35,7 +35,7 @@ void em_algo::init(double_matrix& features)
     for (auto i = 0; i < n_features; ++i)
     {
         // take min, max value and create random from [min, max]
-        ublas::matrix_column<double_matrix > column(features, i);
+        double_matrix_column column(features, i);
         auto min_max_values = boost::minmax_element(column.begin(), column.end());
 
         boost::uniform_real<> uni_dist(*min_max_values.first, *min_max_values.second);
@@ -47,7 +47,7 @@ void em_algo::init(double_matrix& features)
     }
 
     for (auto i = 0; i < n_clusters; ++i)
-        parameters.sigma.push_back(double_matrix(n_features, n_features));
+        parameters.sigmas.push_back(double_matrix(n_features, n_features));
 
     boost::uniform_real<> uni_01_dist(0, 1);
     boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni_01(generator, uni_01_dist);
@@ -56,78 +56,61 @@ void em_algo::init(double_matrix& features)
         for (auto i = 0; i < n_features; ++i)
             for (auto j = 0; j < n_features; ++j)
                 if (i != j)
-                    parameters.sigma[k](i, j) = 0;
+                    parameters.sigmas[k](i, j) = 0;
                 else
-                    parameters.sigma[k](i, j) = uni_01();
+                    parameters.sigmas[k](i, j) = uni_01();
 
     std::cout << parameters << std::endl;
-}
-
-double_vector em_algo::calculate_log_likelihood(double_matrix& features, double_matrix& sigma, ublas::matrix_column<double_matrix > & means)
-{
-    long n_objects = features.size1();
-    long n_features = features.size2();
-
-    double_matrix lower_triangular_sigma(n_features, n_features);
-    // todo: compare to matlab
-    size_t res = cholesky_decompose(sigma, lower_triangular_sigma);
-    std::cout << res << std::endl;
-    std::cout << lower_triangular_sigma << std::endl;
-
-    // computing error to zero
-    for (size_t i = 0; i < lower_triangular_sigma.size1(); ++i)
-        for (size_t j = 0; j < lower_triangular_sigma.size2(); ++j)
-            if (lower_triangular_sigma(i, j) < tol)
-                lower_triangular_sigma(i, j) = 0;
-
-    // center features
-    for (int i = 0; i < n_objects; ++i)
-        // todo: maybe there is a better way + make features not change
-        for (int j = 0; j < n_features; ++j)
-            features(i, j) = features(i, j) - means(j);
-
-    // todo:check inverse
-    double_matrix inverse_lower_triangular_sigma(lower_triangular_sigma.size1(), lower_triangular_sigma.size2());
-    bool is_inverted = InvertMatrix(lower_triangular_sigma, inverse_lower_triangular_sigma);
-    if (!is_inverted)
-    {
-        std::cerr << "Matrix can not be inverted\n";
-        exit(1);
-    }
-    // todo : check noalias http://www.boost.org/doc/libs/1_58_0/libs/numeric/ublas/doc/operations_overview.html
-    auto features_lower_sigma = ublas::prod(features, inverse_lower_triangular_sigma);
-    //std::cout <<  features_lower_sigma.size1() << " " << features_lower_sigma.size2() << std::endl;
-    auto features_lower_sigma_square = element_prod(features_lower_sigma, features_lower_sigma);
-
-    // ld
-    double ld = 0;
-    for (size_t i = 0; i < lower_triangular_sigma.size1(); ++i)
-    {
-        ld += log(lower_triangular_sigma(i, i));
-    }
-    double pi = boost::math::constants::pi<double>();
-    double likelihood_const = -0.5 * (n_objects * log(2 * pi) + 2 * ld);
-    double_vector log_likelihood = double_vector(n_objects, likelihood_const);
-    for (size_t i = 0; i < log_likelihood.size(); ++i)
-        log_likelihood(i) += features_lower_sigma_square(i, 0) + features_lower_sigma_square(i, 1);
-    return log_likelihood;
 }
 
 void em_algo::expectation_step(double_matrix& features)
 {
     long n_objects = features.size1();
+    int n_clusters = parameters.sigmas.size();
+
+    double pi = boost::math::constants::pi<double>();
+    // precalculate inverse matrices and dets
+    std::vector<double_matrix> sigmas_inverted(n_clusters);
+    std::vector<double> norm_distribution_denominator(n_clusters);
+    for (size_t i = 0; i < n_clusters; ++i)
+    {        
+        double_matrix sigma_inverted(parameters.sigmas[i].size1(), parameters.sigmas[i].size2());
+        double det = InvertMatrix(parameters.sigmas[i], sigma_inverted);
+        if (det == 0)
+        {
+            std::cerr << "Matrix can not be inverted\n";
+            exit(1);
+        }
+        norm_distribution_denominator[i] = sqrt(pow(2 * pi, n_objects) * det);
+        std::cout << parameters.sigmas[i] << std::endl;
+        std::cout << sigma_inverted << std::endl;
+        sigmas_inverted[i] = sigma_inverted;
+    }
 
     hidden_vars = double_matrix(n_objects, n_clusters);
-    for (auto j = 0; j < n_clusters; ++j)
+    for (auto i = 0; i < n_objects; ++i)
     {
-        ublas::matrix_column<double_matrix > current_means(parameters.means, j);
-        auto log_likelihood = calculate_log_likelihood(features, parameters.sigma[j], current_means);
-
-        for (size_t i = 0; i < log_likelihood.size(); ++i)
+        double_matrix_row x(features, i);
+        for (auto j = 0; j < n_clusters; ++j)
         {
-//            std::cout << "ll = " << log_likelihood(i) << " exp = " << exp(log_likelihood(i)) << " , w = " << parameters.weights(j) << std::endl;
-            hidden_vars(i, j) = parameters.weights(j) * exp(log_likelihood(i));
-//            std::cout << "hv = " << hidden_vars(i, j) << std::endl;
+            double_matrix_column current_means(parameters.means, j);
+
+            std::cout << x << std::endl;
+            std::cout << current_means << std::endl;
+
+            double_vector x_centered = x - current_means;
+
+            std::cout << x_centered << std::endl;
+
+            double_vector prod1 = prod(x_centered, sigmas_inverted[i]);
+
+            std::cout << prod1 << std::endl;
+
+            double exp_power = inner_prod(prod1, x_centered);
+
+            std::cout << exp_power << std::endl;
+            exp_power = -0.5 * exp_power;
+            hidden_vars(i, j) = parameters.weights(j) * norm_distribution_denominator[j] * exp(exp_power);
         }
     }
 //    std::cout << hidden_vars << std::endl;

@@ -7,7 +7,7 @@
 struct model
 {
     double_matrix means;
-    std::vector<double_matrix> sigma;
+    std::vector<double_matrix> sigmas;
     double_vector weights;
 
     model() {};
