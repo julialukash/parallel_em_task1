@@ -16,7 +16,8 @@ private:
 
     double_vector calculate_log_likelihood(double_matrix& features, double_matrix& sigma, ublas::matrix_column<double_matrix > & means);
 
-    void expectation_step(double_matrix &features);
+    bool is_likelihood_stabilized(double_vector likelihood, double_vector previous_likelihood);
+    double_vector expectation_step(double_matrix &features);
     void maximization_step(double_matrix& features);
 
 public:

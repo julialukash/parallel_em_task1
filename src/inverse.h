@@ -4,6 +4,8 @@ using namespace boost::numeric::ublas;
 
 using namespace std;
 
+const double tol = 1e-5;
+
 template<class T>
 double InvertMatrix(const matrix<T>& input, matrix<T>& inverse)
 {
@@ -22,6 +24,9 @@ double InvertMatrix(const matrix<T>& input, matrix<T>& inverse)
         inverse(0, 1) = -input(0, 1);
         inverse(1, 0) = -input(1, 0);
     }
-
+    for (size_t i = 0; i < inverse.size1(); ++i)
+        for (size_t j = 0; j < inverse.size2(); ++j)
+            if (inverse(i, j) < tol)
+                inverse(i, j) = 0;
 	return det;
 }

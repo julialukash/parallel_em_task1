@@ -63,16 +63,16 @@ void em_algo::init(double_matrix& features)
     std::cout << parameters << std::endl;
 }
 
-void em_algo::expectation_step(double_matrix& features)
+double_vector em_algo::expectation_step(double_matrix& features)
 {
     long n_objects = features.size1();
     int n_clusters = parameters.sigmas.size();
-
     double pi = boost::math::constants::pi<double>();
+
     // precalculate inverse matrices and dets
     std::vector<double_matrix> sigmas_inverted(n_clusters);
     std::vector<double> norm_distribution_denominator(n_clusters);
-    for (size_t i = 0; i < n_clusters; ++i)
+    for (auto i = 0; i < n_clusters; ++i)
     {        
         double_matrix sigma_inverted(parameters.sigmas[i].size1(), parameters.sigmas[i].size2());
         double det = InvertMatrix(parameters.sigmas[i], sigma_inverted);
@@ -81,39 +81,35 @@ void em_algo::expectation_step(double_matrix& features)
             std::cerr << "Matrix can not be inverted\n";
             exit(1);
         }
-        norm_distribution_denominator[i] = sqrt(pow(2 * pi, n_objects) * det);
-        std::cout << parameters.sigmas[i] << std::endl;
-        std::cout << sigma_inverted << std::endl;
+        norm_distribution_denominator[i] = sqrt(pow(2 * pi, parameters.n_features) * det);
         sigmas_inverted[i] = sigma_inverted;
     }
 
     hidden_vars = double_matrix(n_objects, n_clusters);
+    double_vector log_likelihood(n_objects);
+
     for (auto i = 0; i < n_objects; ++i)
     {
         double_matrix_row x(features, i);
+        double norm_value = 0;
         for (auto j = 0; j < n_clusters; ++j)
         {
             double_matrix_column current_means(parameters.means, j);
-
-            std::cout << x << std::endl;
-            std::cout << current_means << std::endl;
-
             double_vector x_centered = x - current_means;
-
-            std::cout << x_centered << std::endl;
-
-            double_vector prod1 = prod(x_centered, sigmas_inverted[i]);
-
-            std::cout << prod1 << std::endl;
-
-            double exp_power = inner_prod(prod1, x_centered);
-
-            std::cout << exp_power << std::endl;
-            exp_power = -0.5 * exp_power;
+            double exp_power = -0.5 * inner_prod(prod(x_centered, sigmas_inverted[j]), x_centered);
+//            std::cout << exp_power << std::endl;
+//            std::cout << norm_distribution_denominator[j] << std::endl;
             hidden_vars(i, j) = parameters.weights(j) * norm_distribution_denominator[j] * exp(exp_power);
+//            std::cout << hidden_vars(i, j)  << std::endl;
+            norm_value += hidden_vars(i, j);
         }
+        double_matrix_row hidden_vars_row(hidden_vars, i);
+//        std::cout << hidden_vars_row << std::endl;
+        hidden_vars_row = hidden_vars_row / norm_value;
+        log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
+//        std::cout << log_likelihood(i) << std::endl;
     }
-//    std::cout << hidden_vars << std::endl;
+    return log_likelihood;
 }
 
 void em_algo::maximization_step(double_matrix& features)
@@ -123,12 +119,19 @@ void em_algo::maximization_step(double_matrix& features)
     }
 }
 
+bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector previous_likelihood)
+{
+    return false;
+}
+
 model em_algo::process(double_matrix& features, int max_iterations)
 {
     int iteration = 0;
-    while (iteration++ < max_iterations)
+    double_vector likelihood, previous_likelihood;
+    while (iteration++ < max_iterations || (iteration > 2 && is_likelihood_stabilized(likelihood, previous_likelihood)))
     {
-        expectation_step(features);
+        previous_likelihood = likelihood;
+        likelihood = expectation_step(features);
         maximization_step(features);
     }
     return parameters;
