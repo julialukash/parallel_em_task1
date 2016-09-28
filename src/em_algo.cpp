@@ -121,6 +121,11 @@ void em_algo::maximization_step(double_matrix& features)
 
 bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector previous_likelihood)
 {
+    bool is_stabilized = true;
+    double_vector likelihood_diff = likelihood - previous_likelihood;
+    for (int i = 0; i < likelihood_diff.size(); ++i)
+        is_stabilized = is_stabilized && fabs(likelihood_diff(i)) < tol;
+    std::cout << is_stabilized << std::endl;
     return false;
 }
 
@@ -128,8 +133,9 @@ model em_algo::process(double_matrix& features, int max_iterations)
 {
     int iteration = 0;
     double_vector likelihood, previous_likelihood;
-    while (iteration++ < max_iterations || (iteration > 2 && is_likelihood_stabilized(likelihood, previous_likelihood)))
+    while (iteration++ < max_iterations && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
     {
+        std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
         previous_likelihood = likelihood;
         likelihood = expectation_step(features);
         maximization_step(features);
