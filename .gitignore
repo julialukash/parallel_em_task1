@@ -1,7 +1,7 @@
 /Archive/
 /task5/
-/build-example1-Desktop-Debug/
+/build-em_algo-Desktop_Qt_5_7_0_clang_64bit-Debug/
 *.zip
 /build-em_algo-Desktop-Debug/
-*.pro.user
+/src/*.pro.user
 *~

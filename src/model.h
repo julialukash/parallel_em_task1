@@ -10,6 +10,8 @@ struct model
     std::vector<double_matrix> sigmas;
     double_vector weights;
 
+    int n_features;
+
     model() {};
 
     friend std::ostream& operator<<(std::ostream& os, const model& model);

@@ -21,18 +21,17 @@ em_algo::em_algo(int number_of_clusters)
 
 void em_algo::init(double_matrix& features)
 {
-    long n_features = features.size2();
-
     base_generator_type generator(42);
 
     parameters = model();
+    parameters.n_features = features.size2();
 
     // init weights
     parameters.weights = double_vector(n_clusters, 1.0 / n_clusters);
 
     // init means
-    parameters.means = double_matrix(n_features, n_clusters);
-    for (auto i = 0; i < n_features; ++i)
+    parameters.means = double_matrix(parameters.n_features, n_clusters);
+    for (int i = 0; i < parameters.n_features; ++i)
     {
         // take min, max value and create random from [min, max]
         double_matrix_column column(features, i);
@@ -46,15 +45,16 @@ void em_algo::init(double_matrix& features)
         }
     }
 
+    std::cout << "create sigma\n";
     for (auto i = 0; i < n_clusters; ++i)
-        parameters.sigmas.push_back(double_matrix(n_features, n_features));
+        parameters.sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features));
 
     boost::uniform_real<> uni_01_dist(0, 1);
     boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni_01(generator, uni_01_dist);
 
     for (auto k = 0; k < n_clusters; ++k)
-        for (auto i = 0; i < n_features; ++i)
-            for (auto j = 0; j < n_features; ++j)
+        for (auto i = 0; i < parameters.n_features; ++i)
+            for (auto j = 0; j < parameters.n_features; ++j)
                 if (i != j)
                     parameters.sigmas[k](i, j) = 0;
                 else
@@ -116,9 +116,11 @@ void em_algo::expectation_step(double_matrix& features)
 //    std::cout << hidden_vars << std::endl;
 }
 
-void em_algo::maximization_step(double_matrix& /*features*/)
+void em_algo::maximization_step(double_matrix& features)
 {
+    for (int j = 0; j < n_clusters; ++j) {
 
+    }
 }
 
 model em_algo::process(double_matrix& features, int max_iterations)
