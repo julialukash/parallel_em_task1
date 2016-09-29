@@ -21,7 +21,7 @@ em_algo::em_algo(int number_of_clusters)
 
 void em_algo::init(double_matrix& features)
 {
-    base_generator_type generator(42);
+    base_generator_type generator(53);
 
     parameters = model();
     parameters.n_features = features.size2();
@@ -47,18 +47,14 @@ void em_algo::init(double_matrix& features)
 
     std::cout << "create sigma\n";
     for (auto i = 0; i < n_clusters; ++i)
-        parameters.sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features));
+        parameters.sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features, 0.0));
 
     boost::uniform_real<> uni_01_dist(0, 1);
     boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni_01(generator, uni_01_dist);
 
     for (auto k = 0; k < n_clusters; ++k)
         for (auto i = 0; i < parameters.n_features; ++i)
-            for (auto j = 0; j < parameters.n_features; ++j)
-                if (i != j)
-                    parameters.sigmas[k](i, j) = 0;
-                else
-                    parameters.sigmas[k](i, j) = uni_01();
+            parameters.sigmas[k](i, i) = uni_01();
 
     std::cout << parameters << std::endl;
 }
@@ -72,7 +68,7 @@ double_vector em_algo::expectation_step(double_matrix& features)
     // precalculate inverse matrices and dets
     std::vector<double_matrix> sigmas_inverted(n_clusters);
     std::vector<double> norm_distribution_denominator(n_clusters);
-    for (auto i = 0; i < n_clusters; ++i)
+    for (int i = 0; i < n_clusters; ++i)
     {        
         double_matrix sigma_inverted(parameters.sigmas[i].size1(), parameters.sigmas[i].size2());
         double det = InvertMatrix(parameters.sigmas[i], sigma_inverted);
@@ -97,25 +93,58 @@ double_vector em_algo::expectation_step(double_matrix& features)
             double_matrix_column current_means(parameters.means, j);
             double_vector x_centered = x - current_means;
             double exp_power = -0.5 * inner_prod(prod(x_centered, sigmas_inverted[j]), x_centered);
-//            std::cout << exp_power << std::endl;
-//            std::cout << norm_distribution_denominator[j] << std::endl;
+            //std::cout << exp_power << std::endl;
+            //std::cout << norm_distribution_denominator[j] << std::endl;
             hidden_vars(i, j) = parameters.weights(j) * norm_distribution_denominator[j] * exp(exp_power);
-//            std::cout << hidden_vars(i, j)  << std::endl;
+            //std::cout << hidden_vars(i, j)  << std::endl;
             norm_value += hidden_vars(i, j);
         }
         double_matrix_row hidden_vars_row(hidden_vars, i);
-//        std::cout << hidden_vars_row << std::endl;
+        //std::cout << hidden_vars_row << std::endl;
         hidden_vars_row = hidden_vars_row / norm_value;
         log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
-//        std::cout << log_likelihood(i) << std::endl;
+        //std::cout << log_likelihood(i) << std::endl;
     }
     return log_likelihood;
 }
 
 void em_algo::maximization_step(double_matrix& features)
 {
-    for (int j = 0; j < n_clusters; ++j) {
+    int n_objects = features.size1();
 
+    for (int j = 0; j < n_clusters; ++j) {
+        double w = 0.0;
+        double_vector mean = double_vector(parameters.n_features, 0.0);
+        double_matrix sigma = double_matrix(parameters.n_features, parameters.n_features, 0.0);
+
+        for (int i = 0; i < n_objects; ++i) {
+            w += hidden_vars(i, j);
+
+            double_matrix_row x_i = row(features, i);
+            mean += hidden_vars(i, j) * x_i;
+
+            double_vector x_centered = x_i - row(features, j);
+            for (int k = 0; k < parameters.n_features; ++k)
+                for (int l = 0; l < parameters.n_features; ++l)
+                    sigma(k, l) = hidden_vars(i, j) * x_centered(k) * x_centered(l);
+        }
+
+        // update weights
+        std::cout << "old weights " << parameters.weights(j) << "\n";
+        parameters.weights(j) = w / n_objects;
+        std::cout << "new weights " << parameters.weights(j) << "\n";
+
+        // update means
+        std::cout << "old means " << column(parameters.means, j) << "\n";
+        double_matrix_column current_mean = column(parameters.means, j);
+        current_mean = mean / w;
+        std::cout << "new means " << column(parameters.means, j) << "\n";
+
+        // update sigmas
+        double_matrix current_sigma = parameters.sigmas[j];
+        std::cout << "old sigma " << parameters.sigmas[j] << "\n";
+        parameters.sigmas[j] = sigma / w;
+        std::cout << "new sigma " << parameters.sigmas[j] << "\n";
     }
 }
 
@@ -123,7 +152,7 @@ bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector p
 {
     bool is_stabilized = true;
     double_vector likelihood_diff = likelihood - previous_likelihood;
-    for (int i = 0; i < likelihood_diff.size(); ++i)
+    for (size_t i = 0; i < likelihood_diff.size(); ++i)
         is_stabilized = is_stabilized && fabs(likelihood_diff(i)) < tol;
     std::cout << is_stabilized << std::endl;
     return false;
@@ -138,6 +167,7 @@ model em_algo::process(double_matrix& features, int max_iterations)
         std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
         previous_likelihood = likelihood;
         likelihood = expectation_step(features);
+        std::cout << "weights " << parameters.weights << "\n";
         maximization_step(features);
     }
     return parameters;
