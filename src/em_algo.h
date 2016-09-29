@@ -10,6 +10,7 @@ private:
     model parameters;
 
     const double tol = 1e-4;
+    const double tol2 = 1e-10;
     int n_clusters;
 
     double_matrix hidden_vars;

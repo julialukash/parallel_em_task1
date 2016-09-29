@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
     em_algo algorithm = em_algo(number_of_clusters);
     algorithm.init(features);
-    model optimal_model = algorithm.process(features, 500);
+    model optimal_model = algorithm.process(features, 10);
 
     std::cout << "optimal model\n" << optimal_model << std::endl;
 

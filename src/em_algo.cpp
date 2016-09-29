@@ -79,10 +79,12 @@ double_vector em_algo::expectation_step(double_matrix& features)
         }
         norm_distribution_denominator[i] = sqrt(pow(2 * pi, parameters.n_features) * det);
         sigmas_inverted[i] = sigma_inverted;
+        std::cout << "sigma inverted: "<< sigmas_inverted[i] << std::endl;
+        std::cout << "norm_distribution_denominator: " << norm_distribution_denominator[i] << std::endl;
     }
 
     hidden_vars = double_matrix(n_objects, n_clusters);
-    double_vector log_likelihood(n_objects);
+    double_vector log_likelihood(n_objects, 0);
 
     for (auto i = 0; i < n_objects; ++i)
     {
@@ -100,34 +102,38 @@ double_vector em_algo::expectation_step(double_matrix& features)
             norm_value += hidden_vars(i, j);
         }
         double_matrix_row hidden_vars_row(hidden_vars, i);
-//        std::cout << hidden_vars_row << std::endl;
-        hidden_vars_row = hidden_vars_row / norm_value;
+        std::cout << hidden_vars_row << std::endl;
+        if (norm_value != 0)
+        {
+            hidden_vars_row = hidden_vars_row / norm_value;
+            log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
+        }
+
 //            std::cout << hidden_vars_row << std::endl;
-        log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
         //std::cout << log_likelihood(i) << std::endl;
     }
-//    double_vector s1(hidden_vars.size1()), s2(hidden_vars.size2());
-//    for (auto i = 0; i < hidden_vars.size1(); ++i)
-//    {
-//        double s1_temp = 0;
-//        for (auto j = 0; j < hidden_vars.size2(); ++j)
-//        {
-//            s1_temp += hidden_vars(i, j);
-//        }
-//        s1(i) = s1_temp;
-//    }
+    double_vector s1(hidden_vars.size1()), s2(hidden_vars.size2());
+    for (auto i = 0; i < hidden_vars.size1(); ++i)
+    {
+        double s1_temp = 0;
+        for (auto j = 0; j < hidden_vars.size2(); ++j)
+        {
+            s1_temp += hidden_vars(i, j);
+        }
+        s1(i) = s1_temp;
+    }
 
-//    for (auto i = 0; i < hidden_vars.size2(); ++i)
-//    {
-//        double s2_temp = 0;
-//        for (auto j = 0; j < hidden_vars.size1(); ++j)
-//        {
-//            s2_temp += hidden_vars(j, i);
-//        }
-//        s2(i) = s2_temp;
-//    }
-//    std::cout << s1 << std::endl;
-//    std::cout << s2 << std::endl;
+    for (auto i = 0; i < hidden_vars.size2(); ++i)
+    {
+        double s2_temp = 0;
+        for (auto j = 0; j < hidden_vars.size1(); ++j)
+        {
+            s2_temp += hidden_vars(j, i);
+        }
+        s2(i) = s2_temp;
+    }
+    std::cout << s1 << std::endl;
+    std::cout << s2 << std::endl;
     return log_likelihood;
 }
 
@@ -168,6 +174,11 @@ void em_algo::maximization_step(double_matrix& features)
         parameters.sigmas[j] = sigma / w;
         for (int k = 0; k < parameters.n_features; ++k)
             parameters.sigmas[j](k, k) = parameters.sigmas[j](k, k) + tol;
+
+        for (size_t k = 0; k < parameters.n_features; ++k)
+            for (size_t l = 0; l < parameters.n_features; ++l)
+                if (parameters.sigmas[j](k, l) < tol2)
+                    parameters.sigmas[j](k, l) = 0;
         std::cout << "new sigma " << parameters.sigmas[j] << "\n";
     }
 }
