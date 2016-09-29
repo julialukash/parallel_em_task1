@@ -21,7 +21,7 @@ em_algo::em_algo(int number_of_clusters)
 
 void em_algo::init(double_matrix& features)
 {
-    base_generator_type generator(53);
+    base_generator_type generator(197);
 
     parameters = model();
     parameters.n_features = features.size2();
@@ -95,16 +95,39 @@ double_vector em_algo::expectation_step(double_matrix& features)
             double exp_power = -0.5 * inner_prod(prod(x_centered, sigmas_inverted[j]), x_centered);
             //std::cout << exp_power << std::endl;
             //std::cout << norm_distribution_denominator[j] << std::endl;
-            hidden_vars(i, j) = parameters.weights(j) * norm_distribution_denominator[j] * exp(exp_power);
+            hidden_vars(i, j) = parameters.weights(j) * norm_distribution_denominator[j] * exp(exp_power);           
             //std::cout << hidden_vars(i, j)  << std::endl;
             norm_value += hidden_vars(i, j);
         }
         double_matrix_row hidden_vars_row(hidden_vars, i);
-        //std::cout << hidden_vars_row << std::endl;
+//        std::cout << hidden_vars_row << std::endl;
         hidden_vars_row = hidden_vars_row / norm_value;
+//            std::cout << hidden_vars_row << std::endl;
         log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
         //std::cout << log_likelihood(i) << std::endl;
     }
+//    double_vector s1(hidden_vars.size1()), s2(hidden_vars.size2());
+//    for (auto i = 0; i < hidden_vars.size1(); ++i)
+//    {
+//        double s1_temp = 0;
+//        for (auto j = 0; j < hidden_vars.size2(); ++j)
+//        {
+//            s1_temp += hidden_vars(i, j);
+//        }
+//        s1(i) = s1_temp;
+//    }
+
+//    for (auto i = 0; i < hidden_vars.size2(); ++i)
+//    {
+//        double s2_temp = 0;
+//        for (auto j = 0; j < hidden_vars.size1(); ++j)
+//        {
+//            s2_temp += hidden_vars(j, i);
+//        }
+//        s2(i) = s2_temp;
+//    }
+//    std::cout << s1 << std::endl;
+//    std::cout << s2 << std::endl;
     return log_likelihood;
 }
 
@@ -126,7 +149,7 @@ void em_algo::maximization_step(double_matrix& features)
             double_vector x_centered = x_i - row(features, j);
             for (int k = 0; k < parameters.n_features; ++k)
                 for (int l = 0; l < parameters.n_features; ++l)
-                    sigma(k, l) = hidden_vars(i, j) * x_centered(k) * x_centered(l);
+                    sigma(k, l) = hidden_vars(i, j) * x_centered(k) * x_centered(l);            
         }
 
         // update weights
@@ -141,21 +164,18 @@ void em_algo::maximization_step(double_matrix& features)
         std::cout << "new means " << column(parameters.means, j) << "\n";
 
         // update sigmas
-        double_matrix current_sigma = parameters.sigmas[j];
         std::cout << "old sigma " << parameters.sigmas[j] << "\n";
         parameters.sigmas[j] = sigma / w;
+        for (int k = 0; k < parameters.n_features; ++k)
+            parameters.sigmas[j](k, k) = parameters.sigmas[j](k, k) + tol;
         std::cout << "new sigma " << parameters.sigmas[j] << "\n";
     }
 }
 
 bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector previous_likelihood)
 {
-    bool is_stabilized = true;
-    double_vector likelihood_diff = likelihood - previous_likelihood;
-    for (size_t i = 0; i < likelihood_diff.size(); ++i)
-        is_stabilized = is_stabilized && fabs(likelihood_diff(i)) < tol;
-    std::cout << is_stabilized << std::endl;
-    return false;
+    double likelihood_diff = sum(likelihood) - sum(previous_likelihood);
+    return fabs(likelihood_diff) < tol;
 }
 
 model em_algo::process(double_matrix& features, int max_iterations)

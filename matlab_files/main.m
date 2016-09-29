@@ -1,6 +1,6 @@
-number_of_classes = 5;
-procents_of_classes = [0.1, 0.05, 0.05, 0.1, 0.7];
-number_of_clouds_in_classes = [1, 1, 1, 1, 2];
+number_of_classes = 3;
+procents_of_classes = [0.1, 0.2, 0.7];
+number_of_clouds_in_classes = [1, 1, 1];
 params.nFeatures = 2;
 params.distance ='far';
 params.width ='fat';
@@ -13,13 +13,13 @@ header  = zeros(1, size(Y,2));
 header(1) = size(Y, 1);
 header(2) = size(Y, 2) - 1;
 Y = [header; Y];
-%filename = '../data/test_set_1.csv';
-%csvwrite(filename,Y);
-[predicted_label,x1,x2] = importfile_2dim('result_test_set_1.csv',1, 10000);
-new_features = [x1 x2];
-plotSample(new_features, predicted_label);
+filename = '../data/test_set_3.csv';
+csvwrite(filename,Y);
+% [predicted_label,x1,x2] = importfile_2dim('result_test_set_1.csv',1, 10000);
+% new_features = [x1 x2];
+% plotSample(new_features, predicted_label);
 
-sigma = [1, 0; 0, 2];
+% sigma = [1, 0; 0, 2];
 % 
 % xR = X * inv(sigma);
 

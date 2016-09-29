@@ -20,10 +20,10 @@ int main(int argc, char *argv[])
 
     em_algo algorithm = em_algo(number_of_clusters);
     algorithm.init(features);
-    model optimal_model = algorithm.process(features);
+    model optimal_model = algorithm.process(features, 500);
 
-    //std::cout << "optimal model\n" << optimal_model << std::endl;
+    std::cout << "optimal model\n" << optimal_model << std::endl;
 
-    //import::write(output_filename, features, labels);
+//    import::write(output_filename, features, labels);
     return 0;
 }
