@@ -29,7 +29,7 @@ double InvertMatrix(const matrix<T>& input, matrix<T>& inverse)
 
         for (size_t i = 0; i < inverse.size1(); ++i)
             for (size_t j = 0; j < inverse.size2(); ++j)
-                if (inverse(i, j) < tol)
+                if (fabs(inverse(i, j)) < tol)
                     inverse(i, j) = 0;
     }
 	return det;
