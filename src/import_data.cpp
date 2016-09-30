@@ -40,7 +40,7 @@ void import::read(char* filename, double_matrix& features, int_vector& labels)
     }
 }
 
-void import::write(char* filename, double_matrix& features, int_vector& labels)
+void import::write(char* filename, model optimal_model)
 {
     std::ofstream output_file(filename);
     if (!output_file.is_open())
@@ -49,12 +49,16 @@ void import::write(char* filename, double_matrix& features, int_vector& labels)
         exit(1);
     }
 
-    for (size_t i = 0; i < features.size1(); ++i)
-    {
-        output_file << labels(i) << " ";
-        for (size_t j = 0 ; j < features.size2(); ++j)
-            output_file << features(i, j) << " ";
-        output_file << std::endl;
-    }
+    int n_clusters = optimal_model.means.size2();
+
+    for (int i = 0; i < n_clusters; ++i)
+        output_file << optimal_model.means(0, i) << " " << optimal_model.means(1, i) << "\n";
+
+    for (int i = 0; i < n_clusters; ++i)
+        output_file << optimal_model.sigmas[i](0, 0) << " "
+                    << optimal_model.sigmas[i](0, 1) << "\n"
+                    << optimal_model.sigmas[i](1, 0) << " "
+                    << optimal_model.sigmas[i](1, 1) << "\n";
+
     output_file.close();
 }

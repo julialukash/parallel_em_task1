@@ -24,6 +24,6 @@ int main(int argc, char *argv[])
 
     std::cout << "optimal model\n" << optimal_model << std::endl;
 
-//    import::write(output_filename, features, labels);
+    import::write(output_filename, optimal_model);
     return 0;
 }
