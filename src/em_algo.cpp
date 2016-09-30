@@ -49,12 +49,9 @@ void em_algo::init(double_matrix& features)
     for (auto i = 0; i < n_clusters; ++i)
         parameters.sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features, 0.0));
 
-    boost::uniform_real<> uni_01_dist(0, 1);
-    boost::variate_generator<base_generator_type&, boost::uniform_real<> > uni_01(generator, uni_01_dist);
-
     for (auto k = 0; k < n_clusters; ++k)
         for (auto i = 0; i < parameters.n_features; ++i)
-            parameters.sigmas[k](i, i) = uni_01();
+            parameters.sigmas[k](i, i) = 1;
 
     std::cout << parameters << std::endl;
 }
@@ -109,24 +106,24 @@ double_vector em_algo::expectation_step(double_matrix& features)
             log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
         }
 
-//            std::cout << hidden_vars_row << std::endl;
+        //std::cout << hidden_vars_row << std::endl;
         //std::cout << log_likelihood(i) << std::endl;
     }
     double_vector s1(hidden_vars.size1()), s2(hidden_vars.size2());
-    for (auto i = 0; i < hidden_vars.size1(); ++i)
+    for (size_t i = 0; i < hidden_vars.size1(); ++i)
     {
         double s1_temp = 0;
-        for (auto j = 0; j < hidden_vars.size2(); ++j)
+        for (size_t j = 0; j < hidden_vars.size2(); ++j)
         {
             s1_temp += hidden_vars(i, j);
         }
         s1(i) = s1_temp;
     }
 
-    for (auto i = 0; i < hidden_vars.size2(); ++i)
+    for (size_t i = 0; i < hidden_vars.size2(); ++i)
     {
         double s2_temp = 0;
-        for (auto j = 0; j < hidden_vars.size1(); ++j)
+        for (size_t j = 0; j < hidden_vars.size1(); ++j)
         {
             s2_temp += hidden_vars(j, i);
         }
@@ -152,10 +149,15 @@ void em_algo::maximization_step(double_matrix& features)
             double_matrix_row x_i = row(features, i);
             mean += hidden_vars(i, j) * x_i;
 
-            double_vector x_centered = x_i - row(features, j);
+            //std::cout << "x " << x_i << " " << row(parameters.means, j) << "\n";
+            double_vector x_centered = x_i - column(parameters.means, j);
+            //int x;
+            //std::cin >> x;
+            //double_matrix sigma_temp = prod(trans(x_centered), x_centered);
+            //sigma = sigma + hidden_vars(i, j) * sigma_temp;
             for (int k = 0; k < parameters.n_features; ++k)
                 for (int l = 0; l < parameters.n_features; ++l)
-                    sigma(k, l) = hidden_vars(i, j) * x_centered(k) * x_centered(l);            
+                    sigma(k, l) = sigma(k, l) + hidden_vars(i, j) * x_centered(k) * x_centered(l);
         }
 
         // update weights
@@ -175,10 +177,6 @@ void em_algo::maximization_step(double_matrix& features)
         for (int k = 0; k < parameters.n_features; ++k)
             parameters.sigmas[j](k, k) = parameters.sigmas[j](k, k) + tol;
 
-        for (size_t k = 0; k < parameters.n_features; ++k)
-            for (size_t l = 0; l < parameters.n_features; ++l)
-                if (parameters.sigmas[j](k, l) < tol2)
-                    parameters.sigmas[j](k, l) = 0;
         std::cout << "new sigma " << parameters.sigmas[j] << "\n";
     }
 }
