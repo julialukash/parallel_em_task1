@@ -97,12 +97,12 @@ double_vector em_algo::expectation_step(double_matrix& features)
             double exp_power = -0.5 * inner_prod(prod(x_centered, sigmas_inverted[j]), x_centered);
             //std::cout << exp_power << std::endl;
             //std::cout << norm_distribution_denominator[j] << std::endl;
-            hidden_vars(i, j) = parameters.weights(j) * norm_distribution_denominator[j] * exp(exp_power);           
+            hidden_vars(i, j) = parameters.weights(j) * exp(exp_power) / norm_distribution_denominator[j];
             //std::cout << hidden_vars(i, j)  << std::endl;
             norm_value += hidden_vars(i, j);
         }
         double_matrix_row hidden_vars_row(hidden_vars, i);
-        std::cout << hidden_vars_row << std::endl;
+        std::cout << "hidden_vars_row i = " << i << " " << hidden_vars_row << std::endl;
         if (norm_value != 0)
         {
             hidden_vars_row = hidden_vars_row / norm_value;
@@ -132,8 +132,8 @@ double_vector em_algo::expectation_step(double_matrix& features)
         }
         s2(i) = s2_temp;
     }
-    std::cout << s1 << std::endl;
-    std::cout << s2 << std::endl;
+    std::cout << "s1 = " << s1 << std::endl;
+    std::cout << "s2 = " << s2 << std::endl;
     return log_likelihood;
 }
 
