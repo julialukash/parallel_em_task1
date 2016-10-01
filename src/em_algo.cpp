@@ -21,7 +21,7 @@ em_algo::em_algo(int number_of_clusters)
 
 void em_algo::init(double_matrix& features)
 {
-    base_generator_type generator(1985);
+    base_generator_type generator(198);
 
     parameters = model();
     parameters.n_features = features.size2();
@@ -49,7 +49,7 @@ void em_algo::init(double_matrix& features)
     for (int k = 0; k < n_clusters; ++k)
     {
         parameters.sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features, 0.0));
-        for (size_t i = 0; i < parameters.n_features; ++i)
+        for (int i = 0; i < parameters.n_features; ++i)
             parameters.sigmas[k](i, i) = 1;
     }
 }
