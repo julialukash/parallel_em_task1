@@ -153,7 +153,7 @@ model em_algo::process(double_matrix& features, int max_iterations)
     double_vector likelihood, previous_likelihood;
     while (iteration++ < max_iterations && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
     {
-        std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
+        //std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
 
         previous_likelihood = likelihood;
         likelihood = expectation_step(features);
