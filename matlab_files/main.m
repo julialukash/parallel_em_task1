@@ -6,7 +6,7 @@ params.distance ='far';
 params.width ='fat';
 model = create_model(number_of_classes, procents_of_classes, number_of_clouds_in_classes, params);
 
-N = 200000;
+N = 100000;
 [features, label] =gen_sample(model, N);
 
 Y = [label, features];
@@ -16,5 +16,7 @@ header(1) = size(Y, 1);
 header(2) = size(Y, 2) - 1;
 Y = [header; Y];
 
-filename = '../data/test_set_7.csv';
+test = 1;
+filename = strcat('../data/test_set_', int2str(test), '.csv');
 dlmwrite(filename,Y,'delimiter',' ');
+save(strcat('ts', int2str(test), '.mat'));
