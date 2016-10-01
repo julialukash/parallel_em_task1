@@ -7,8 +7,8 @@ function draw_optimal_model(test)
     k = size(optimal_model, 1) / 3;
 
     for i = 1 : k
-        mu = optimal_model(i, :)
-        sigma = optimal_model(2 * i + k - 1 : 2 * i + k, :)
+        mu = optimal_model(i, :);
+        sigma = optimal_model(2 * i + k - 1 : 2 * i + k, :);
     
         plot_normal_contour(mu, sigma);
     end

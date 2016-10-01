@@ -1,10 +1,8 @@
 #include <time.h>
-#include <chrono>
 
 #include "em_algo.h"
 #include "import_data.h"
 #include "interface.h"
-
 
 int main(int argc, char *argv[])
 {
@@ -25,13 +23,11 @@ int main(int argc, char *argv[])
     em_algo algorithm = em_algo(number_of_clusters);
     algorithm.init(features);
 
-    size_t begin_time = time(0);
+    clock_t begin = clock();
     model optimal_model = algorithm.process(features, 50);
-    size_t end_time = time(0);
-    std::cout << "calculate model time " << end_time - begin_time << " sec" << std::endl;
+    std::cout << "Elapsed time is " << (clock() - begin) / CLOCKS_PER_SEC << " sec" << std::endl;
 
-    std::cout << "optimal model\n" << optimal_model << std::endl;
-
+    //std::cout << "optimal model\n" << optimal_model << std::endl;
     import::write(output_filename, optimal_model);
     return 0;
 }
