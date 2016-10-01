@@ -63,7 +63,6 @@ double_vector em_algo::expectation_step(double_matrix& features)
     std::vector<double_matrix> sigmas_inverted(n_clusters);
     std::vector<double> norm_distribution_denominator(n_clusters);
 
-//    omp_set_num_threads(1);
 //    #pragma omp parallel for
     for (int i = 0; i < n_clusters; ++i)
     {
@@ -81,21 +80,23 @@ double_vector em_algo::expectation_step(double_matrix& features)
     hidden_vars = double_matrix(n_objects, n_clusters);
     double_vector log_likelihood(n_objects, 0);
 
-//    #pragma omp parallel for
+    auto means = parameters.means;
+    auto w = parameters.weights;
+//    omp_set_num_threads(4);
+//    #pragma omp parallel for //firstprivate(sigmas_inverted, means, w, norm_distribution_denominator)
     for (auto i = 0; i < n_objects; ++i)
     {
-
 //                auto tid = omp_get_thread_num();
 //                std::cout << " i am thread number " << tid << std::endl;
         double_matrix_row x(features, i);
         double norm_value = 0;
         for (auto j = 0; j < n_clusters; ++j)
         {
-            double_matrix_column current_means(parameters.means, j);
+            double_matrix_column current_means(means, j);
             double_vector x_centered = x - current_means;
 
             double exp_power = -0.5 * inner_prod(prod(x_centered, sigmas_inverted[j]), x_centered);
-            hidden_vars(i, j) = parameters.weights(j) * exp(exp_power) / norm_distribution_denominator[j];
+            hidden_vars(i, j) = w(j) * exp(exp_power) / norm_distribution_denominator[j];
 
             norm_value += hidden_vars(i, j);
         }

@@ -23,9 +23,9 @@ int main(int argc, char *argv[])
     em_algo algorithm = em_algo(number_of_clusters);
     algorithm.init(features);
 
-    clock_t begin = clock();
-    model optimal_model = algorithm.process(features, 50);
-    std::cout << "Elapsed time is " << (clock() - begin) / CLOCKS_PER_SEC << " sec" << std::endl;
+    auto begin = omp_get_wtime();
+    model optimal_model = algorithm.process(features, 10);
+    std::cout << "Elapsed time is " << (omp_get_wtime() - begin) << " sec" << std::endl;
 
     //std::cout << "optimal model\n" << optimal_model << std::endl;
     import::write(output_filename, optimal_model);
