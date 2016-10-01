@@ -9,7 +9,6 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "cholesky.hpp"
 #include "inverse.h"
 
 typedef boost::minstd_rand base_generator_type;
@@ -63,8 +62,11 @@ double_vector em_algo::expectation_step(double_matrix& features)
     // precalculate inverse matrices and dets
     std::vector<double_matrix> sigmas_inverted(n_clusters);
     std::vector<double> norm_distribution_denominator(n_clusters);
+
+//    omp_set_num_threads(1);
+//    #pragma omp parallel for
     for (int i = 0; i < n_clusters; ++i)
-    {        
+    {
         double_matrix sigma_inverted(parameters.sigmas[i].size1(), parameters.sigmas[i].size2());
         double det = InvertMatrix(parameters.sigmas[i], sigma_inverted);
         if (det == 0)
@@ -79,8 +81,12 @@ double_vector em_algo::expectation_step(double_matrix& features)
     hidden_vars = double_matrix(n_objects, n_clusters);
     double_vector log_likelihood(n_objects, 0);
 
+//    #pragma omp parallel for
     for (auto i = 0; i < n_objects; ++i)
     {
+
+//                auto tid = omp_get_thread_num();
+//                std::cout << " i am thread number " << tid << std::endl;
         double_matrix_row x(features, i);
         double norm_value = 0;
         for (auto j = 0; j < n_clusters; ++j)
@@ -99,7 +105,6 @@ double_vector em_algo::expectation_step(double_matrix& features)
             hidden_vars_row = hidden_vars_row / norm_value;
             log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
         }
-
     }
     return log_likelihood;
 }
@@ -162,8 +167,7 @@ model em_algo::process(double_matrix& features, int max_iterations)
     double_vector likelihood, previous_likelihood;
     while (iteration++ < max_iterations && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
     {
-        //std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
-
+        //std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;        
         previous_likelihood = likelihood;
         likelihood = expectation_step(features);
         maximization_step(features);
