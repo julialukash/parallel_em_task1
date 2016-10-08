@@ -108,37 +108,46 @@ void em_algo::maximization_step(double_matrix& features)
 {
     int n_objects = features.size1();
 
+    double_vector w = double_vector(n_clusters, 0.0);
+    double_matrix means = double_matrix(parameters.n_features, n_clusters, 0.0);
+    std::vector<double_matrix> sigmas;
     for (int j = 0; j < n_clusters; ++j)
+        sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features, 0.0));
+
+    for (int i = 0; i < n_objects; ++i)
     {
-        double w = 0.0;
-        double_vector mean = double_vector(parameters.n_features, 0.0);
-        double_matrix sigma = double_matrix(parameters.n_features, parameters.n_features, 0.0);
+        double_matrix_row x_i = row(features, i);
 
-        for (int i = 0; i < n_objects; ++i)
+        for (int j = 0; j < n_clusters; ++j)
         {
-            w += hidden_vars(i, j);
+            double g = hidden_vars(i, j);
+            w(j) += g;
 
-            double_matrix_row x_i = row(features, i);
-            mean += hidden_vars(i, j) * x_i;
+            double_matrix_column single_mean = column(means, j);
+
+            single_mean += g * x_i;
 
             double_vector x_centered = x_i - column(parameters.means, j);
             for (int k = 0; k < parameters.n_features; ++k)
                 for (int l = 0; l < parameters.n_features; ++l)
-                    sigma(k, l) = sigma(k, l) + hidden_vars(i, j) * x_centered(k) * x_centered(l);
+                    sigmas[j](k, l) = sigmas[j](k, l) + g * x_centered(k) * x_centered(l);
         }
+    }
+    // update weights
+    parameters.weights = w / n_objects;
 
-        // update weights
-        parameters.weights(j) = w / n_objects;
-
+    for (int j = 0; j < n_clusters; ++j) {
+        double weight = w(j);
         // update means
-        double_matrix_column current_mean = column(parameters.means, j);
-        current_mean = mean / w;
+        double_matrix_column means_old = column(parameters.means, j);
+        double_matrix_column means_new = column(means, j);
+        means_old = means_new / weight;
 
         // update sigmas
-        parameters.sigmas[j] = sigma / w;
+        parameters.sigmas[j] = sigmas[j] / weight;
         for (int k = 0; k < parameters.n_features; ++k)
             parameters.sigmas[j](k, k) = parameters.sigmas[j](k, k) + tol;
-   }
+    }
 }
 
 bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector previous_likelihood)
