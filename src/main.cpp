@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     algorithm.init(features);
 
     auto begin = omp_get_wtime();
-    model optimal_model = algorithm.process(features, 10);
+    model optimal_model = algorithm.process(features, 50);
     std::cout << "Elapsed time is " << (omp_get_wtime() - begin) << " sec" << std::endl;
 
     //std::cout << "optimal model\n" << optimal_model << std::endl;

@@ -11,6 +11,8 @@
 
 #include "inverse.h"
 
+#define PARALLEL 1
+
 typedef boost::minstd_rand base_generator_type;
 
 em_algo::em_algo(int number_of_clusters)
@@ -63,7 +65,6 @@ double_vector em_algo::expectation_step(double_matrix& features)
     std::vector<double_matrix> sigmas_inverted(n_clusters);
     std::vector<double> norm_distribution_denominator(n_clusters);
 
-//    #pragma omp parallel for
     for (int i = 0; i < n_clusters; ++i)
     {
         double_matrix sigma_inverted(parameters.sigmas[i].size1(), parameters.sigmas[i].size2());
@@ -82,12 +83,11 @@ double_vector em_algo::expectation_step(double_matrix& features)
 
     auto means = parameters.means;
     auto w = parameters.weights;
-//    omp_set_num_threads(4);
-//    #pragma omp parallel for //firstprivate(sigmas_inverted, means, w, norm_distribution_denominator)
+#ifdef PARALLEL
+    #pragma omp parallel for //firstprivate(sigmas_inverted, means, w, norm_distribution_denominator)
+#endif
     for (auto i = 0; i < n_objects; ++i)
     {
-//                auto tid = omp_get_thread_num();
-//                std::cout << " i am thread number " << tid << std::endl;
         double_matrix_row x(features, i);
         double norm_value = 0;
         for (auto j = 0; j < n_clusters; ++j)
@@ -120,6 +120,9 @@ void em_algo::maximization_step(double_matrix& features)
     for (int j = 0; j < n_clusters; ++j)
         sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features, 0.0));
 
+#ifdef PARALLEL
+    #pragma omp parallel for
+#endif
     for (int i = 0; i < n_objects; ++i)
     {
         double_matrix_row x_i = row(features, i);
@@ -164,11 +167,14 @@ bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector p
 
 model em_algo::process(double_matrix& features, int max_iterations)
 {
+#ifdef PARALLEL
+    omp_set_num_threads(2);
+#endif
     int iteration = 0;
     double_vector likelihood, previous_likelihood;
     while (iteration++ < max_iterations && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
     {
-        //std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;        
+//        std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
         previous_likelihood = likelihood;
         likelihood = expectation_step(features);
         maximization_step(features);
