@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     model optimal_model = algorithm.process(features, 50);
     std::cout << "Elapsed time is " << (clock() - begin) / CLOCKS_PER_SEC << " sec" << std::endl;
 
-    //std::cout << "optimal model\n" << optimal_model << std::endl;
+    std::cout << "optimal model\n" << optimal_model << std::endl;
     import::write(output_filename, optimal_model);
     return 0;
 }
