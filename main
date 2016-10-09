@@ -1,0 +1,15 @@
+#!/bin/bash
+n_threads="1 2"
+perf_file="/home/sheldon/parallel/task1/data/perf.csv"
+input_dir="/home/sheldon/parallel/task1/data"
+program="./home/sheldon/parallel/task1/build-em_algo-Desktop-Debug/em_algo"
+
+echo "results are writing into $perf_file"
+
+for filename in $input_dir/*.csv; do
+    for thread in $n_threads; do
+	echo "params $filename $thread"
+	echo "$filename"_result.txt
+#	$program "$filename" "$filename"_result.txt $perf_file 4 $thread
+    done
+done
