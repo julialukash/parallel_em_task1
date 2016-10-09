@@ -2,8 +2,8 @@
 % X - generated sample, size NxD
 % t - tags for classes, size Nx1
 
-function [] = plotSample(X, t)
-figure;
+function h = plotSample(X, t)
+h = figure;
 hold on;
     classes = unique(t);
     for i = 1 : size(classes, 1)
