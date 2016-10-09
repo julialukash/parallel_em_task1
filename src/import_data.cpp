@@ -7,7 +7,7 @@
 
 #include "import_data.h"
 
-void import::read(char* filename, double_matrix& features, int_vector& labels)
+long import::read(char* filename, double_matrix& features, int_vector& labels)
 {
     std::ifstream input_file(filename);
     std::string value;
@@ -38,6 +38,7 @@ void import::read(char* filename, double_matrix& features, int_vector& labels)
             iss >> features(i, j);
         ++i;
     }
+    return n_points;
 }
 
 void import::write(char* filename, model optimal_model)

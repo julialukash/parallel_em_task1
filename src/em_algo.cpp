@@ -81,8 +81,6 @@ double_vector em_algo::expectation_step(double_matrix& features)
     hidden_vars = double_matrix(n_objects, n_clusters);
     double_vector log_likelihood(n_objects, 0);
 
-    auto means = parameters.means;
-    auto w = parameters.weights;
 #ifdef PARALLEL
     #pragma omp parallel for //firstprivate(sigmas_inverted, means, w, norm_distribution_denominator)
 #endif
@@ -92,11 +90,11 @@ double_vector em_algo::expectation_step(double_matrix& features)
         double norm_value = 0;
         for (auto j = 0; j < n_clusters; ++j)
         {
-            double_matrix_column current_means(means, j);
+            double_matrix_column current_means(parameters.means, j);
             double_vector x_centered = x - current_means;
 
             double exp_power = -0.5 * inner_prod(prod(x_centered, sigmas_inverted[j]), x_centered);
-            hidden_vars(i, j) = w(j) * exp(exp_power) / norm_distribution_denominator[j];
+            hidden_vars(i, j) = parameters.weights(j) * exp(exp_power) / norm_distribution_denominator[j];
 
             norm_value += hidden_vars(i, j);
         }
@@ -165,14 +163,14 @@ bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector p
     return fabs(likelihood_diff) < tol;
 }
 
-model em_algo::process(double_matrix& features, int max_iterations)
+model em_algo::process(double_matrix& features, int n_threads, int max_iterations)
 {
 #ifdef PARALLEL
-    omp_set_num_threads(2);
+    omp_set_num_threads(n_threads);
 #endif
     int iteration = 0;
     double_vector likelihood, previous_likelihood;
-    while (iteration++ < max_iterations && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
+    while (iteration++ < max_iterations)// && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
     {
 //        std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
         previous_likelihood = likelihood;

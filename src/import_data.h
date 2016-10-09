@@ -6,7 +6,7 @@
 
 namespace import
 {
-void read(char* filename, double_matrix& features, int_vector& labels);
+long read(char* filename, double_matrix& features, int_vector& labels);
 
 void write(char* filename, model optimal_model);
 }
