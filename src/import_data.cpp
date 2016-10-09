@@ -63,3 +63,16 @@ void import::write(char* filename, model optimal_model)
 
     output_file.close();
 }
+
+void import::write_performance(char* filename, int n_threads, long n_objects, double time)
+{
+    std::ofstream output_file(filename, std::ofstream::out | std::ofstream::app);
+    if (!output_file.is_open())
+    {
+        std::cerr << "Incorrect output file " << filename;
+        exit(1);
+    }
+
+    output_file << n_threads << " " << n_objects << " " << time << "\n";
+    output_file.close();
+}

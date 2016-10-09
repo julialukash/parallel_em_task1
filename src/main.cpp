@@ -12,9 +12,11 @@ int main(int argc, char *argv[])
         exit(1);
     }
     auto input_filename = argv[1];
-    auto number_of_clusters = std::stoi(argv[2]);
-    auto output_filename = argv[3];
-    auto number_of_threads = std::stoi(argv[4]);
+    auto output_filename = argv[2];
+    auto perfomance_filename = argv[3];
+    auto number_of_clusters = std::stoi(argv[4]);
+    auto number_of_threads = std::stoi(argv[5]);
+
 
     double_matrix features;
     int_vector labels;
@@ -31,11 +33,7 @@ int main(int argc, char *argv[])
     std::cout << "n_threads =  " << number_of_threads << std::endl;
     std::cout << "Elapsed time is " << time_elapsed << " sec" << std::endl;
     std::cout << number_of_threads << " " << number_of_points << " " << time_elapsed << std::endl;
-
-<<<<<<< HEAD
-    std::cout << "optimal model\n" << optimal_model << std::endl;
-=======
->>>>>>> origin/master
+    import::write_performance(perfomance_filename, number_of_threads, number_of_points, time_elapsed);
     import::write(output_filename, optimal_model);
     return 0;
 }
