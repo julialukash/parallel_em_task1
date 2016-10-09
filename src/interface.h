@@ -6,6 +6,9 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <omp.h>
 
+#include "papi.h"
+#define NUM_EVENTS 2
+
 namespace ublas = boost::numeric::ublas;
 
 typedef ublas::matrix<double> double_matrix;
