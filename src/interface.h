@@ -4,6 +4,10 @@
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/io.hpp>
+#include <omp.h>
+
+#include "papi.h"
+#define NUM_EVENTS 2
 
 namespace ublas = boost::numeric::ublas;
 
@@ -14,6 +18,5 @@ typedef ublas::vector<int> int_vector;
 typedef ublas::matrix_row<double_matrix > double_matrix_row;
 typedef ublas::matrix_column<double_matrix > double_matrix_column;
 
-//#include <omp.h>
 
 #endif // INTERFACE_H

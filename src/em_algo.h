@@ -10,7 +10,6 @@ private:
     model parameters;
 
     const double tol = 1e-4;
-    const double tol2 = 1e-10;
     int n_clusters;
 
     double_matrix hidden_vars;
@@ -24,7 +23,7 @@ private:
 public:
     em_algo(int number_of_clusters = 100);
     void init(double_matrix& features);
-    model process(double_matrix& features, int max_iterations = 50);
+    model process(double_matrix& features, int n_threads, int max_iterations = 50);
 };
 
 #endif // EM_ALGO_H

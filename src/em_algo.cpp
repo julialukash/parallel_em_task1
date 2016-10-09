@@ -9,8 +9,9 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "cholesky.hpp"
 #include "inverse.h"
+
+#define PARALLEL 1
 
 typedef boost::minstd_rand base_generator_type;
 
@@ -63,8 +64,9 @@ double_vector em_algo::expectation_step(double_matrix& features)
     // precalculate inverse matrices and dets
     std::vector<double_matrix> sigmas_inverted(n_clusters);
     std::vector<double> norm_distribution_denominator(n_clusters);
+
     for (int i = 0; i < n_clusters; ++i)
-    {        
+    {
         double_matrix sigma_inverted(parameters.sigmas[i].size1(), parameters.sigmas[i].size2());
         double det = InvertMatrix(parameters.sigmas[i], sigma_inverted);
         if (det == 0)
@@ -79,6 +81,9 @@ double_vector em_algo::expectation_step(double_matrix& features)
     hidden_vars = double_matrix(n_objects, n_clusters);
     double_vector log_likelihood(n_objects, 0);
 
+#ifdef PARALLEL
+    #pragma omp parallel for //firstprivate(sigmas_inverted, means, w, norm_distribution_denominator)
+#endif
     for (auto i = 0; i < n_objects; ++i)
     {
         double_matrix_row x(features, i);
@@ -99,7 +104,6 @@ double_vector em_algo::expectation_step(double_matrix& features)
             hidden_vars_row = hidden_vars_row / norm_value;
             log_likelihood(i) = log(inner_prod(hidden_vars_row, parameters.weights));
         }
-
     }
     return log_likelihood;
 }
@@ -114,6 +118,9 @@ void em_algo::maximization_step(double_matrix& features)
     for (int j = 0; j < n_clusters; ++j)
         sigmas.push_back(double_matrix(parameters.n_features, parameters.n_features, 0.0));
 
+#ifdef PARALLEL
+    #pragma omp parallel for
+#endif
     for (int i = 0; i < n_objects; ++i)
     {
         double_matrix_row x_i = row(features, i);
@@ -156,14 +163,16 @@ bool em_algo::is_likelihood_stabilized(double_vector likelihood, double_vector p
     return fabs(likelihood_diff) < tol;
 }
 
-model em_algo::process(double_matrix& features, int max_iterations)
+model em_algo::process(double_matrix& features, int n_threads, int max_iterations)
 {
+#ifdef PARALLEL
+    omp_set_num_threads(n_threads);
+#endif
     int iteration = 0;
     double_vector likelihood, previous_likelihood;
-    while (iteration++ < max_iterations && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
+    while (iteration++ < max_iterations)// && (iteration <= 2 || !is_likelihood_stabilized(likelihood, previous_likelihood)))
     {
-        //std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
-
+//        std::cout << "iteration = " << iteration << ", likelihood sum = " << sum(likelihood) << std::endl;
         previous_likelihood = likelihood;
         likelihood = expectation_step(features);
         maximization_step(features);

@@ -23,11 +23,11 @@ else:unix:QMAKE_LFLAGS += -fopenmp
 macx:CONFIG += c++14
 else:unix:CONFIG += c++11
 
-macx:
-{
-    LIBS += -L"/usr/local/Cellar/boost/1.61.0_1/lib"
-    INCLUDEPATH += "/usr/local/Cellar/boost/1.61.0_1/include"
-}
+macx:LIBS += -L"/usr/local/Cellar/boost/1.61.0_1/lib"
+else:LIBS += -L"~/parallel/task1/papi-5.5.0/src/libpfm4/lib" -lpapi
+
+macx:INCLUDEPATH += "/usr/local/Cellar/boost/1.61.0_1/include"
+else:INCLUDEPATH += "~/parallel/task1/papi-5.5.0/src/libpfm4/include"
 
 SOURCES += main.cpp \
     em_algo.cpp \
