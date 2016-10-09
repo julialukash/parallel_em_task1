@@ -1,15 +1,20 @@
 #!/bin/bash
-n_threads="1 2"
-perf_file="/home/sheldon/parallel/task1/data/perf.csv"
-input_dir="/home/sheldon/parallel/task1/data"
-program="./home/sheldon/parallel/task1/build-em_algo-Desktop-Debug/em_algo"
+n_iterations="1 2 3"
+n_threads="1 2 3 4"
+perf_file="/home/sheldon/parallel/task1/performance.csv"
+input_dir="/home/sheldon/parallel/task1/data_performance"
+output_dir="/home/sheldon/parallel/task1/res_performance/"
+program="./build-em_algo-Desktop-Debug/em_algo"
 
 echo "results are writing into $perf_file"
-
+counter=0
 for filename in $input_dir/*.csv; do
+    echo "counter = $counter"
+    counter=$((counter+1))
     for thread in $n_threads; do
-	echo "params $filename $thread"
-	echo "$filename"_result.txt
-#	$program "$filename" "$filename"_result.txt $perf_file 4 $thread
+	for iter in $n_iterations; do
+		echo "params $filename $thread iter = $iter"
+		$program "$filename"  "$output_dir"result_"$counter"_"$thread"_"$iter" $perf_file 4 $thread
+	done
     done
 done
